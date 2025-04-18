@@ -1,5 +1,11 @@
 #include <reg51.h>
 
+void Delay(unsigned int t)//较短的延时，最大65536
+{
+	while(t--);
+}
+
+// 基本元件控制
 enum Channel
 {
 	Channel_LED = 4,//LED
@@ -16,11 +22,26 @@ void SelectChannel(unsigned char channel)
 
 void InitSystem()
 {
-	P2 = 0x00;//P2低5位清0，否则不能选择通道
+	// 使系统在LCD插上时正常运行
+	//P2 = 0x00;//P2低5位清0，否则不能选择通道
+	P1 &= 0xfb;//P1.2的E设为0屏蔽LCD信号
+	
 	SelectChannel(Channel_Buzz);
 	P0 = 0x00;//关蜂鸣器和继电器
 	SelectChannel(Channel_LED);
 	P0 = 0xff;//LED全灭
+}
+
+void Buzz(unsigned char open)//蜂鸣器和继电器响声
+{
+	static unsigned char last = 0;
+	if(open != last)
+	{
+		SelectChannel(Channel_Buzz);
+		if(open) P0 = 0x40;//0x40仅响蜂鸣，0xd0也响继电
+		else P0 = 0x00;
+		last = open;
+	}
 }
 
 void LED8(unsigned char num)
@@ -30,6 +51,15 @@ void LED8(unsigned char num)
 	P0 = num;
 }
 
+void LEDTwinkle()
+{
+	static unsigned int t = 0;
+	t++;//自动溢出归0
+	if(t & 0x8) LED8(0xff);
+	else LED8(0x00);
+}
+
+// 数码管字形代码
 struct Seg
 {
 	char ch;
@@ -107,6 +137,7 @@ unsigned char SegCodeCA(char c)//共阳
 	return 0xff - SegCodeCC(c);
 }
 
+// 数码管显示
 void SEG_1LED(unsigned char pos, unsigned char segCode)
 {
 	unsigned int i;
@@ -164,7 +195,8 @@ void SEG_8LED_String(char* str)
 	}
 }
 
-int S(unsigned char n)//检测S7-S4按键，弹起触发
+// 按键
+int S(unsigned char n)//检测S7-S4按键，弹起触发，J5需为BTN
 {
 	static unsigned char last[8] = {0};
 	if(!(P3 & (1 << (7 - n))))
@@ -177,6 +209,35 @@ int S(unsigned char n)//检测S7-S4按键，弹起触发
 		return 1;
 	}
 	return 0;
+}
+
+sbit KR0 = P3 ^ 0;
+sbit KR1 = P3 ^ 1;
+sbit KR2 = P3 ^ 2;
+sbit KR3 = P3 ^ 3;
+sbit KC0 = P4 ^ 4;
+sbit KC1 = P4 ^ 2;
+sbit KC2 = P3 ^ 5;
+sbit KC3 = P3 ^ 4;
+unsigned char GetKeyCode()//检测当前按下键代码，J5需为KBD
+{
+	unsigned char c = 0;
+	//行检测
+	KR0 = 1, KR1 = 1, KR2 = 1, KR3 = 1;
+	KC0 = 0, KC1 = 0, KC2 = 0, KC3 = 0;
+	c += (KR0 == 1) << 0;
+	c += (KR1 == 1) << 1;
+	c += (KR2 == 1) << 2;
+	c += (KR3 == 1) << 3;
+	if(c == 0x0f) return 0xff;//没有任何键按下
+	//列检测
+	KR0 = 0, KR1 = 0, KR2 = 0, KR3 = 0;
+	KC0 = 1, KC1 = 1, KC2 = 1, KC3 = 1;
+	c += (KC0 == 1) << 4;
+	c += (KC1 == 1) << 5;
+	c += (KC2 == 1) << 6;
+	c += (KC3 == 1) << 7;
+	return c;
 }
 
 int main()
