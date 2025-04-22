@@ -34,7 +34,11 @@ sbit E = P1 ^ 2;
 
 #define Command_ClearScreen 0x01//清屏
 
-void Delay(unsigned int t)
+// 延时
+#define DelayShort 200//该值过低会导致第一行无法列定位，建议至少为103，取200保证稳定
+#define DelayLong 500//这个其实可以为0
+
+void Delay_LCD1602(unsigned int t)
 {
 	while(t--);
 }
@@ -43,34 +47,36 @@ void LCD1602_WriteCommand(unsigned char c)
 {
 	E = 0;
 	RS = 0;//命令
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	RW = 0;//写
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	DB = c;
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	E = 1;
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	E = 0;
+	Delay_LCD1602(DelayShort);//这里不延时会使首个字符不显示
 }
 
 void LCD1602_WriteData(unsigned char d)
 {
 	E = 0;
 	RS = 1;//数据
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	RW = 0;//写
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	DB = d;
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	E = 1;
-	Delay(50);
+	Delay_LCD1602(DelayShort);
 	E = 0;
+	//Delay_LCD1602(DelayShort);
 }
 
-void LCD1602_Clear()//清屏
+void LCD1602_Clear()//清屏，不能在初始化前调用，否则会使第二行不显示
 {
 	LCD1602_WriteCommand(Command_ClearScreen);
-	Delay(500);
+	Delay_LCD1602(DelayLong);
 }
 
 void LCD1602_Return()//回车
@@ -88,29 +94,26 @@ void LCD1602_ShowCursor(char visible)//显示或隐藏光标
 	{
 		LCD1602_WriteCommand(Command_SetDisplay | Display_D);
 	}
-	Delay(500);
+	Delay_LCD1602(DelayLong);
 }
 
 void LCD1602_Init()//初始化
 {
 	LCD1602_WriteCommand(Command_SetWorkMode | WorkMode_DL | WorkMode_N);//设置为8位2行
-	Delay(500);
+	Delay_LCD1602(DelayLong);
 	LCD1602_ShowCursor(0);//显示开，无光标
 	LCD1602_WriteCommand(Command_SetMode | Mode_ID);//光标右移，显示不移动
-	Delay(500);
+	Delay_LCD1602(DelayLong);
 	LCD1602_Clear();
 }
 
-void LCD1602_Print(char r, unsigned char* str)//显示字符串
+void LCD1602_Print(char r, char c, unsigned char* str)//显示字符串
 {
-	static unsigned char isInited = 0;
-	unsigned char i, address = 0;
-	if(!isInited) LCD1602_Init();
-	if(r) address = DDAddress_SecondLine;
+	unsigned char i, address = c;
+	if(r) address |= DDAddress_SecondLine;
 	LCD1602_WriteCommand(Command_SetDDRAMAddress | address);
 	for(i=0; str[i] && i < DDAddress_LineEnd; i++)
 	{
 		LCD1602_WriteData(str[i]);
 	}
 }
-
