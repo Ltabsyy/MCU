@@ -1,4 +1,6 @@
 #include <reg51.h>
+#include <stdarg.h>//使用va_list
+#include <stdio.h>//使用vsprintf()
 
 sbit RS = P2 ^ 0;
 sbit RW = P2 ^ 1;
@@ -34,12 +36,9 @@ sbit E = P1 ^ 2;
 
 #define Command_ClearScreen 0x01//清屏
 
-// 延时
-#define DelayShort 200//该值过低会导致第一行无法列定位，建议至少为103，取200保证稳定
-#define DelayLong 500//这个其实可以为0
-
-void Delay_LCD1602(unsigned int t)
+void Delay_LCD1602()//E高脉冲延时
 {
+	unsigned int t = 20;//该值建议至少为10，取20保证稳定
 	while(t--);
 }
 
@@ -47,36 +46,31 @@ void LCD1602_WriteCommand(unsigned char c)
 {
 	E = 0;
 	RS = 0;//命令
-	Delay_LCD1602(DelayShort);
 	RW = 0;//写
-	Delay_LCD1602(DelayShort);
 	DB = c;
-	Delay_LCD1602(DelayShort);
+	Delay_LCD1602();
 	E = 1;
-	Delay_LCD1602(DelayShort);
+	Delay_LCD1602();
 	E = 0;
-	Delay_LCD1602(DelayShort);//这里不延时会使首个字符不显示
 }
 
 void LCD1602_WriteData(unsigned char d)
 {
 	E = 0;
 	RS = 1;//数据
-	Delay_LCD1602(DelayShort);
 	RW = 0;//写
-	Delay_LCD1602(DelayShort);
 	DB = d;
-	Delay_LCD1602(DelayShort);
+	Delay_LCD1602();
 	E = 1;
-	Delay_LCD1602(DelayShort);
+	Delay_LCD1602();
 	E = 0;
-	//Delay_LCD1602(DelayShort);
 }
 
 void LCD1602_Clear()//清屏，不能在初始化前调用，否则会使第二行不显示
 {
+	unsigned int t = 1000;//清屏需要独立长延时，否则会出现第一行无法列定位，首个或更多字符不显示等问题
 	LCD1602_WriteCommand(Command_ClearScreen);
-	Delay_LCD1602(DelayLong);
+	while(t--);
 }
 
 void LCD1602_Return()//回车
@@ -94,16 +88,13 @@ void LCD1602_ShowCursor(char visible)//显示或隐藏光标
 	{
 		LCD1602_WriteCommand(Command_SetDisplay | Display_D);
 	}
-	Delay_LCD1602(DelayLong);
 }
 
 void LCD1602_Init()//初始化
 {
 	LCD1602_WriteCommand(Command_SetWorkMode | WorkMode_DL | WorkMode_N);//设置为8位2行
-	Delay_LCD1602(DelayLong);
 	LCD1602_ShowCursor(0);//显示开，无光标
 	LCD1602_WriteCommand(Command_SetMode | Mode_ID);//光标右移，显示不移动
-	Delay_LCD1602(DelayLong);
 	LCD1602_Clear();
 }
 
@@ -116,4 +107,14 @@ void LCD1602_Print(char r, char c, unsigned char* str)//显示字符串
 	{
 		LCD1602_WriteData(str[i]);
 	}
+}
+
+void LCD1602_Printf(char r, char c, unsigned char* format, ...)//LCD上格式化输出
+{
+	char str[40]={0};
+	va_list v_list;
+	va_start(v_list, format);//接收可变参数列表
+	vsprintf(str, format, v_list);
+	va_end(v_list);
+	LCD1602_Print(r, c, str);
 }
