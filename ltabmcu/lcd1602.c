@@ -65,7 +65,45 @@ void LCD1602_WriteData(unsigned char d)
 	Delay_LCD1602();
 	E = 0;
 }
+/*
+unsigned char LCD1602_ReadState()
+{
+	unsigned char s;
+	E = 0;
+	RS = 0;//状态
+	RW = 1;//读
+	Delay_LCD1602();
+	E = 1;
+	Delay_LCD1602();
+	s = DB;
+	E = 0;
+	return s;
+}
 
+unsigned char LCD1602_ReadData()
+{
+	unsigned char d;
+	E = 0;
+	RS = 1;//数据
+	RW = 1;//读
+	Delay_LCD1602();
+	E = 1;
+	Delay_LCD1602();
+	d = DB;
+	E = 0;
+	return d;
+}
+
+unsigned char LCD1602_IsBusy()
+{
+	return !!(LCD1602_ReadState() & 0x80);
+}
+
+unsigned char LCD1602_ReadAddressCounter()
+{
+	return LCD1602_ReadState() & 0x7f;
+}
+*/
 void LCD1602_Clear()//清屏，不能在初始化前调用，否则会使第二行不显示
 {
 	unsigned int t = 1000;//清屏需要独立长延时，否则会出现第一行无法列定位，首个或更多字符不显示等问题
@@ -111,10 +149,39 @@ void LCD1602_Print(char r, char c, unsigned char* str)//显示字符串
 
 void LCD1602_Printf(char r, char c, unsigned char* format, ...)//LCD上格式化输出
 {
-	char str[40]={0};
+	char str[DDAddress_LineEnd] = {0};
 	va_list v_list;
 	va_start(v_list, format);//接收可变参数列表
 	vsprintf(str, format, v_list);
 	va_end(v_list);
 	LCD1602_Print(r, c, str);
 }
+/*
+void LCD1602_SetCustomChar(unsigned char slot, unsigned char height, unsigned char** dotMatrix)//槽位0-7，点阵为8*5矩阵或槽位0-3，点阵为10*5矩阵
+{
+	unsigned char table[10] = {0};
+	unsigned char r, c;
+	if(height > 10) height = 10;
+	for(r=0; r<height; r++)
+	{
+		for(c=0; c<5; c++)
+		{
+			table[r] += dotMatrix[r][c] << (4-c);
+		}
+	}
+	if(height <= 8) LCD1602_WriteCommand(Command_SetCGRAMAddress | slot * 0x08);
+	else LCD1602_WriteCommand(Command_SetCGRAMAddress | slot * 0x10);
+	for(r=0; r<height; r++)
+	{
+		LCD1602_WriteData(table[r]);
+	}
+}
+
+void LCD1602_ShowCustomChar(char r, char c, unsigned char slot, unsigned char height)
+{
+	unsigned char address = c;
+	if(r) address |= DDAddress_SecondLine;
+	LCD1602_WriteCommand(Command_SetDDRAMAddress | address);
+	if(height <= 8) LCD1602_WriteData(slot);
+	else LCD1602_WriteData(slot*2);
+}*/
