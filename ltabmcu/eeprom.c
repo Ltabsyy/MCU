@@ -10,7 +10,7 @@ void Delay_EEPROM()//写后延时
 
 void Read_EEPROM(unsigned int address, unsigned char* dataBuf, unsigned char length)
 {
-	RW_ICC(0xa1, address, dataBuf, length);
+	RW_IIC(0xa1, address, dataBuf, length);
 }
 
 void Write_EEPROM(unsigned int address, unsigned char* dataBuf, unsigned char length)
@@ -18,13 +18,13 @@ void Write_EEPROM(unsigned int address, unsigned char* dataBuf, unsigned char le
 	unsigned char l;
 	if(address/PageLength == (address+length-1)/PageLength)
 	{
-		RW_ICC(0xa0, address, dataBuf, length);
+		RW_IIC(0xa0, address, dataBuf, length);
 	}
 	else//跨页写入
 	{
 		//首页
 		l = address/PageLength*PageLength+PageLength-1-address+1;
-		RW_ICC(0xa0, address, dataBuf, l);
+		RW_IIC(0xa0, address, dataBuf, l);
 		Delay_EEPROM();
 		//后续页可使用递归以简化代码，实际使用非递归以节省栈帧空间
 		//Write_EEPROM(address+l, dataBuf+l, length-l);
@@ -34,14 +34,14 @@ void Write_EEPROM(unsigned int address, unsigned char* dataBuf, unsigned char le
 		length -= l;
 		while(length > PageLength)
 		{
-			RW_ICC(0xa0, address, dataBuf, PageLength);
+			RW_IIC(0xa0, address, dataBuf, PageLength);
 			Delay_EEPROM();
 			address += PageLength;
 			dataBuf += PageLength;
 			length -= PageLength;
 		}
 		//末页
-		RW_ICC(0xa0, address, dataBuf, length);
+		RW_IIC(0xa0, address, dataBuf, length);
 		//最后延时由用户控制
 	}
 }

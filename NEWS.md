@@ -12,3 +12,6 @@ LtabMCU v2.1
 
 LtabMCU v2.2
 - 优化 微调LCD1602代码
+
+LtabMCU v2.3
+- 修复 RW_IIC错误拼写为RW_ICC

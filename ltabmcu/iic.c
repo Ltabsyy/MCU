@@ -116,7 +116,7 @@ unsigned char IIC_ReceiveByte()
 	return b;
 }
 
-void RW_ICC(unsigned char select, unsigned int address, unsigned char* dataBuf, unsigned char length)
+void RW_IIC(unsigned char select, unsigned int address, unsigned char* dataBuf, unsigned char length)
 {
 	char i;
 	IIC_Start();
