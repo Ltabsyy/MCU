@@ -15,3 +15,7 @@ LtabMCU v2.2
 
 LtabMCU v2.3
 - 修复 RW_IIC错误拼写为RW_ICC
+
+LtabMCU v2.4
+- 新增 EEPROM写入和延时的集成函数
+- 优化 补充LCD1602格式化输出的说明

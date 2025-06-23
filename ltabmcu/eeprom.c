@@ -45,3 +45,9 @@ void Write_EEPROM(unsigned int address, unsigned char* dataBuf, unsigned char le
 		//最后延时由用户控制
 	}
 }
+
+void WriteDelay_EEPROM(unsigned int address, unsigned char* dataBuf, unsigned char length)//写入并延时，用于连续写
+{
+	Write_EEPROM(address, dataBuf, length);
+	Delay_EEPROM();
+}
