@@ -19,3 +19,7 @@ LtabMCU v2.3
 LtabMCU v2.4
 - 新增 EEPROM写入和延时的集成函数
 - 优化 补充LCD1602格式化输出的说明
+
+LtabMCU v2.5
+- 新增 按键识别的key库
+- 新增 base库，包括选择通道、控制LED、蜂鸣器、标准系统初始化
