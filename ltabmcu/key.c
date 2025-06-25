@@ -1,4 +1,5 @@
-sfr P3 = 0xb0;
+#include <reg51.h>//引用P3，避免链接时重复定义
+//sfr P3 = 0xb0;
 sfr P4 = 0xc0;
 
 sbit KR0 = P3 ^ 0;

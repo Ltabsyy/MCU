@@ -23,3 +23,7 @@ LtabMCU v2.4
 LtabMCU v2.5
 - 新增 按键识别的key库
 - 新增 base库，包括选择通道、控制LED、蜂鸣器、标准系统初始化
+
+LtabMCU v2.6
+- 新增 base.h
+- 优化 key库的P3引用reg51.h
