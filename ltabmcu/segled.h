@@ -1,0 +1,11 @@
+#ifndef _SEGLED_H
+#define _SEGLED_H
+
+//unsigned char code seg_code[10] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f};//共阴
+unsigned char code seg_code[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80, 0x90};//共阳
+
+void SEG_1LED(unsigned char pos, unsigned char segCode);
+void SEG_8LED_Number(unsigned long num);
+//void SEG_8LED_String(char* str);
+
+#endif

@@ -27,3 +27,8 @@ LtabMCU v2.5
 LtabMCU v2.6
 - 新增 base.h
 - 优化 key库的P3引用reg51.h
+
+LtabMCU v3
+- 新增 LED高级控制库，基本控制在base库中
+- 新增 数码管字形代码segcode库
+- 新增 数码管显示segled库
